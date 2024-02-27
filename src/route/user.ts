@@ -3,6 +3,7 @@ import bcryptjs from "bcryptjs";
 import jsonwentoken from "jsonwebtoken";
 import { query } from "../lib/databse";
 import dotenv from "dotenv";
+import { registerValidation } from "../validations/validation";
 
 const router = express.Router();
 dotenv.config();
@@ -14,6 +15,8 @@ interface RequestBody {
 }
 
 router.post("/register", async (req: Request, res: Response) => {
+  const { error } = registerValidation(req.body);
+  if (error) return res.send(error.message);
   const { username, password, name } = req.body as RequestBody;
   try {
     const userExists = await query("SELECT * FROM users WHERE username = $1", [
@@ -33,6 +36,9 @@ router.post("/register", async (req: Request, res: Response) => {
 });
 
 router.post("/login", async (req: Request, res: Response) => {
+  const { error } = registerValidation(req.body);
+  if (error) return res.send(error.message);
+
   const { username, password } = req.body as Omit<RequestBody, "name">;
   const user = await query("SELECT * FROM users WHERE username = $1", [
     username,

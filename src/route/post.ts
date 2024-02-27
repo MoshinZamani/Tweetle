@@ -1,6 +1,7 @@
 import express, { Request, Response } from "express";
 import { query } from "../lib/databse";
 import verifyToken from "../lib/verifyToken";
+import { postValidation } from "../validations/validation";
 
 const router = express.Router();
 
@@ -105,7 +106,7 @@ router.get(
 );
 
 router.put("/operations", verifyToken, async (req: Request, res: Response) => {
-  //   if (Object.keys(req.body).length === 0) return res.send("Nothing to update");
+  if (Object.keys(req.body).length === 0) return res.send("Nothing to update");
   const { id, like, dislike, comment } = req.body;
   const sqlQuery = "SELECT * FROM posts WHERE id = $1";
   try {
@@ -165,6 +166,9 @@ router.put("/:id", verifyToken, async (req: Request, res: Response) => {
 
 router.post("/", verifyToken, async (req: Request, res: Response) => {
   const { title, topic, message, ownerId, expiry } = req.body;
+
+  const { error } = postValidation({ title, topic, message, ownerId, expiry });
+  if (error) return res.send(error.message);
 
   const timeStamp = new Date().toDateString();
 
